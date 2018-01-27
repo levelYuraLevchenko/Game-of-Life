@@ -10,6 +10,10 @@ namespace GameOfLife
     {
         static void Main(string[] args)
         {
+            World world = new World();
+            world.Empty();
+            world.Drow();
+            world.CellArrangement();
         }
     }
 }
