@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GameOfLife
@@ -17,7 +18,7 @@ namespace GameOfLife
         // Длинна строки массива.
         private static int lineLength = 40;
         // Двумерный массив символов.
-        private char[,] arrayBoard = new char[columnsLength, lineLength];
+        private int[,] arrayBoard = new int[columnsLength, lineLength];
 
 
         // Метод отвечающий за расстоновку живих клеток.
@@ -34,13 +35,17 @@ namespace GameOfLife
                 {
                     case ConsoleKey.Enter:
                         {
-                            arrayBoard[x, y] = 'O';
+                            if(arrayBoard[x,y] == 0)
+                                arrayBoard[x, y] = 1;
+                            else
+                                arrayBoard[x, y] = 0;
+
                             Drow();
                             break;
                         }
                     case ConsoleKey.Spacebar:
                         {
-                            //Start
+                            StartGame();
                             break;
                         }
                     case ConsoleKey.UpArrow:
@@ -82,13 +87,13 @@ namespace GameOfLife
         // Вывод поля с внутренними изменениями.
         public void Drow()
         {          
-            for (int i = 0; i < columnsLength; i++)
+            for (var i = 0; i < columnsLength; i++)
             {
-                for (int j = 0; j < lineLength; j++)
+                for (var j = 0; j < lineLength; j++)
                 {
                     if (i == x && j == y)
                     {
-                        Console.Write('*');
+                        Console.Write("*");
                     }
                     else
                     {
@@ -102,13 +107,55 @@ namespace GameOfLife
         // Вывод пустого поля.
         public void Empty()
         {
-            for (int i = 0; i < columnsLength; i++)
+            for (var i = 0; i < columnsLength; i++)
             {
-                for (int j = 0; j < lineLength; j++)
+                for (var j = 0; j < lineLength; j++)
                 {
-                    arrayBoard[i, j] = ' ';
+                    arrayBoard[i, j] = 0;
                 }
             }
+        }
+
+        public void StartGame()
+        {
+            int count = 0;
+            do
+            {
+                Console.Clear();
+                count++;
+                Console.WriteLine("Поколение {0}", count);
+                Drow();
+                Thread.Sleep(2500);
+
+                for (var i = 0; i < columnsLength; i++)
+                {
+                    for (var j = 0; j < lineLength; j++)
+                    {
+                        if (arrayBoard[i, j] == 1)
+                        {
+                            int[] lifeCall = new int[] { arrayBoard[i - 1, j - 1], arrayBoard[i - 1, j], arrayBoard[i - 1, j + 1], arrayBoard[i, j - 1],arrayBoard[i, j + 1],arrayBoard[i + 1, j - 1], arrayBoard[i + 1, j], arrayBoard[i + 1, j + 1]};
+
+                            int callsCaunt = 0;
+
+                            for (var k = 0; k < lifeCall.Length; k++)
+                            {
+                                if (lifeCall[k] == 1)
+                                {
+                                    callsCaunt++;
+                                }
+                            }
+                            if (callsCaunt < 2 || callsCaunt > 3)
+                            {
+                                arrayBoard[i, j] = 0;
+                            }
+                            else
+                            {
+                                arrayBoard[i, j] = 1;
+                            }
+                        }
+                    }
+                }
+            } while (true);
         }
     }
 }
