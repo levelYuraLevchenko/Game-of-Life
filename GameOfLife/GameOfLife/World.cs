@@ -135,16 +135,16 @@ namespace GameOfLife
                         {
                             int[] lifeCall = new int[] { arrayBoard[i - 1, j - 1], arrayBoard[i - 1, j], arrayBoard[i - 1, j + 1], arrayBoard[i, j - 1],arrayBoard[i, j + 1],arrayBoard[i + 1, j - 1], arrayBoard[i + 1, j], arrayBoard[i + 1, j + 1]};
 
-                            int callsCaunt = 0;
+                            int callsCount = 0;
 
                             for (var k = 0; k < lifeCall.Length; k++)
                             {
                                 if (lifeCall[k] == 1)
                                 {
-                                    callsCaunt++;
+                                    callsCount++;
                                 }
                             }
-                            if (callsCaunt < 2 || callsCaunt > 3)
+                            if (callsCount < 2 || callsCount > 3)
                             {
                                 arrayBoard[i, j] = 0;
                             }
