@@ -14,12 +14,22 @@ namespace GameOfLife
         // Координатная точка Y.
         private int y = 0;
         // Количество столбцов массива.
-        private static int columnsLength = 20;
+        public int ColumnsLength { get; private set; }
         // Длинна строки массива.
-        private static int lineLength = 40;
-        // Двумерный массив символов.
-        private int[,] arrayBoard = new int[columnsLength, lineLength];
+        public int LineLength { get; private set; }
 
+        private int[,] _arrayBoard;
+        private bool[,] _nextGeneration;
+
+
+        public World(int sizeX, int sizeY)
+        {
+            ColumnsLength = sizeX;
+            LineLength = sizeY;
+
+            _arrayBoard = new int[ColumnsLength, LineLength];
+            _nextGeneration = new bool[ColumnsLength, LineLength];
+        }
 
         // Метод отвечающий за расстоновку живих клеток.
         public void CellArrangement()
@@ -33,16 +43,18 @@ namespace GameOfLife
 
                 switch (info.Key)
                 {
+                    // Создает или удаляет живую клетку.
                     case ConsoleKey.Enter:
                         {
-                            if(arrayBoard[x,y] == 0)
-                                arrayBoard[x, y] = 1;
+                            if(_arrayBoard[x,y] == 0)
+                                _arrayBoard[x, y] = 1;
                             else
-                                arrayBoard[x, y] = 0;
+                                _arrayBoard[x, y] = 0;
 
                             Drow();
                             break;
                         }
+                    // Запуск игры.
                     case ConsoleKey.Spacebar:
                         {
                             StartGame();
@@ -58,7 +70,7 @@ namespace GameOfLife
                         }
                     case ConsoleKey.DownArrow:
                         {
-                            if (x < (columnsLength - 1))                            
+                            if (x < (ColumnsLength - 1))                            
                                 x++;
                             
                             Drow();
@@ -74,7 +86,7 @@ namespace GameOfLife
                         }
                     case ConsoleKey.RightArrow:
                         {
-                            if (y < (lineLength -1))                            
+                            if (y < (LineLength - 1))                            
                                 y++;
                             
                             Drow();
@@ -87,18 +99,14 @@ namespace GameOfLife
         // Вывод поля с внутренними изменениями.
         public void Drow()
         {          
-            for (var i = 0; i < columnsLength; i++)
+            for (var i = 0; i < ColumnsLength; i++)
             {
-                for (var j = 0; j < lineLength; j++)
+                for (var j = 0; j < LineLength; j++)
                 {
                     if (i == x && j == y)
-                    {
                         Console.Write("*");
-                    }
                     else
-                    {
-                        Console.Write(arrayBoard[i, j]);
-                    }
+                        Console.Write(_arrayBoard[i, j]);
                 }
                 Console.WriteLine();
             }
@@ -107,13 +115,9 @@ namespace GameOfLife
         // Вывод пустого поля.
         public void Empty()
         {
-            for (var i = 0; i < columnsLength; i++)
-            {
-                for (var j = 0; j < lineLength; j++)
-                {
-                    arrayBoard[i, j] = 0;
-                }
-            }
+            for (var i = 0; i < ColumnsLength; i++)
+                for (var j = 0; j < LineLength; j++)
+                    _arrayBoard[i, j] = 0;
         }
 
         public void StartGame()
@@ -127,31 +131,41 @@ namespace GameOfLife
                 Drow();
                 Thread.Sleep(2500);
 
-                for (var i = 0; i < columnsLength; i++)
+                for (var i = 0; i < ColumnsLength; i++)
                 {
-                    for (var j = 0; j < lineLength; j++)
+                    for (var j = 0; j < LineLength; j++)
                     {
-                        if (arrayBoard[i, j] == 1)
+                        if (_arrayBoard[i, j] == 1)
                         {
-                            int[] lifeCall = new int[] { arrayBoard[i - 1, j - 1], arrayBoard[i - 1, j], arrayBoard[i - 1, j + 1], arrayBoard[i, j - 1],arrayBoard[i, j + 1],arrayBoard[i + 1, j - 1], arrayBoard[i + 1, j], arrayBoard[i + 1, j + 1]};
+                            //int[] lifeCall = new int[] { _arrayBoard[i - 1, j - 1], _arrayBoard[i - 1, j], _arrayBoard[i - 1, j + 1], _arrayBoard[i, j - 1], _arrayBoard[i, j + 1], _arrayBoard[i + 1, j - 1], _arrayBoard[i + 1, j], _arrayBoard[i + 1, j + 1]};        
 
                             int callsCount = 0;
 
-                            for (var k = 0; k < lifeCall.Length; k++)
+                            try
                             {
-                                if (lifeCall[k] == 1)
-                                {
-                                    callsCount++;
-                                }
+                                int[] lifeCall = new int[] { _arrayBoard[i - 1, j - 1], _arrayBoard[i - 1, j], _arrayBoard[i - 1, j + 1], _arrayBoard[i, j - 1], _arrayBoard[i, j + 1], _arrayBoard[i + 1, j - 1], _arrayBoard[i + 1, j], _arrayBoard[i + 1, j + 1] };
+
+                                for (var k = 0; k < lifeCall.Length; k++)
+                                    if (lifeCall[k] == 1)
+                                        callsCount++;
                             }
+                            catch (IndexOutOfRangeException)
+                            {
+                                continue;
+                            }
+
+                            //for (var k = 0; k < lifeCall.Length; k++)
+                            //{
+                            //    if (lifeCall[k] == 1)
+                            //    {
+                            //        callsCount++;
+                            //    }
+                            //}
+
                             if (callsCount < 2 || callsCount > 3)
-                            {
-                                arrayBoard[i, j] = 0;
-                            }
+                                _arrayBoard[i, j] = 0;
                             else
-                            {
-                                arrayBoard[i, j] = 1;
-                            }
+                                _arrayBoard[i, j] = 1;
                         }
                     }
                 }
