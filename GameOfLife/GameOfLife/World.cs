@@ -17,17 +17,18 @@ namespace GameOfLife
         public int ColumnsLength { get; private set; }
         // Длинна строки массива.
         public int LineLength { get; private set; }
-
-        private int[,] _arrayBoard;
+        // Массив для разчетов.
+        private bool[,] _arrayBoard;
+        // Массив для вывода.
         private bool[,] _nextGeneration;
 
-
+        // Конструктор.
         public World(int sizeX, int sizeY)
         {
             ColumnsLength = sizeX;
             LineLength = sizeY;
 
-            _arrayBoard = new int[ColumnsLength, LineLength];
+            _arrayBoard = new bool[ColumnsLength, LineLength];
             _nextGeneration = new bool[ColumnsLength, LineLength];
         }
 
@@ -46,10 +47,10 @@ namespace GameOfLife
                     // Создает или удаляет живую клетку.
                     case ConsoleKey.Enter:
                         {
-                            if(_arrayBoard[x,y] == 0)
-                                _arrayBoard[x, y] = 1;
+                            if (_arrayBoard[x, y] == false)
+                                _arrayBoard[x, y] = true;
                             else
-                                _arrayBoard[x, y] = 0;
+                                _arrayBoard[x, y] = false;
 
                             Drow();
                             break;
@@ -96,7 +97,7 @@ namespace GameOfLife
             } while (info.Key != ConsoleKey.Escape);
         }
 
-        // Вывод поля с внутренними изменениями.
+        // Вывод поля и звездочки.
         public void Drow()
         {          
             for (var i = 0; i < ColumnsLength; i++)
@@ -106,70 +107,108 @@ namespace GameOfLife
                     if (i == x && j == y)
                         Console.Write("*");
                     else
-                        Console.Write(_arrayBoard[i, j]);
+                        Console.Write(_arrayBoard[i, j] ? "X" : "_");
                 }
                 Console.WriteLine();
             }
         }
 
-        // Вывод пустого поля.
-        public void Empty()
+        // Вывод поля после начала игры.
+        public void NextDrow()
         {
             for (var i = 0; i < ColumnsLength; i++)
+            {
                 for (var j = 0; j < LineLength; j++)
-                    _arrayBoard[i, j] = 0;
+                {
+                    Console.Write(_nextGeneration[i, j] ? "X" : "_");
+                }
+                Console.WriteLine();
+            }
         }
 
+        // Соседние слоты и их подсчет.
+        public int Neighbors(int numX, int numY)
+        {
+            int callsCount = 0;
+
+            for (var i = numX - 1; i < numX + 2; i++)
+            {
+                for (var j = numY - 1; j < numY + 2; j++)
+                {
+                    if (i == numX && j == numY)
+                        continue;
+
+                    if (!((numX < 0 || numY < 0) || (numX >= ColumnsLength || numY >= LineLength)))
+                    {
+                        if (_arrayBoard[i, j] == true) //ошибка
+                        {
+                            callsCount++;
+                        }
+                    }
+                }
+            }
+            return callsCount;
+        }
+
+        // Игровой процесс.
         public void StartGame()
         {
-            int count = 0;
+            Console.Clear();
+            int count = 1;
+            Console.WriteLine("Поколение {0}", count);
+            Drow();
+            CallBehavior();
+            Thread.Sleep(2000);           
+
             do
             {
                 Console.Clear();
                 count++;
                 Console.WriteLine("Поколение {0}", count);
-                Drow();
-                Thread.Sleep(2500);
 
+                //не готово!
                 for (var i = 0; i < ColumnsLength; i++)
                 {
                     for (var j = 0; j < LineLength; j++)
                     {
-                        if (_arrayBoard[i, j] == 1)
+                        _nextGeneration[i, j] = _arrayBoard[i, j];
+                    }
+                }
+
+                NextDrow();
+                CallBehavior();
+                Thread.Sleep(2500);
+
+            } while (true);
+        }
+
+        // Поведение клеток.
+        private void CallBehavior()
+        {
+            for (var i = 0; i < ColumnsLength; i++)
+            {
+                for (var j = 0; j < LineLength; j++)
+                {
+                    if (_arrayBoard[i, j] == true)
+                    {
+                        int neighbors = Neighbors(i, j);
+
+                        if (neighbors < 2 || neighbors > 3)
+                            _arrayBoard[i, j] = false;
+                        else
+                            _arrayBoard[i, j] = true;
+                    }
+                    else
+                    {
+                        int neighbors = Neighbors(i, j);
+
+                        if (neighbors == 3)
                         {
-                            //int[] lifeCall = new int[] { _arrayBoard[i - 1, j - 1], _arrayBoard[i - 1, j], _arrayBoard[i - 1, j + 1], _arrayBoard[i, j - 1], _arrayBoard[i, j + 1], _arrayBoard[i + 1, j - 1], _arrayBoard[i + 1, j], _arrayBoard[i + 1, j + 1]};        
-
-                            int callsCount = 0;
-
-                            try
-                            {
-                                int[] lifeCall = new int[] { _arrayBoard[i - 1, j - 1], _arrayBoard[i - 1, j], _arrayBoard[i - 1, j + 1], _arrayBoard[i, j - 1], _arrayBoard[i, j + 1], _arrayBoard[i + 1, j - 1], _arrayBoard[i + 1, j], _arrayBoard[i + 1, j + 1] };
-
-                                for (var k = 0; k < lifeCall.Length; k++)
-                                    if (lifeCall[k] == 1)
-                                        callsCount++;
-                            }
-                            catch (IndexOutOfRangeException)
-                            {
-                                continue;
-                            }
-
-                            //for (var k = 0; k < lifeCall.Length; k++)
-                            //{
-                            //    if (lifeCall[k] == 1)
-                            //    {
-                            //        callsCount++;
-                            //    }
-                            //}
-
-                            if (callsCount < 2 || callsCount > 3)
-                                _arrayBoard[i, j] = 0;
-                            else
-                                _arrayBoard[i, j] = 1;
+                            _arrayBoard[i, j] = true;
                         }
                     }
                 }
-            } while (true);
+            }
         }
     }
 }

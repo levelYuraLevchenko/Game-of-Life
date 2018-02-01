@@ -12,9 +12,7 @@ namespace GameOfLife
         {
             World world = new World(10,20);
 
-            // Пустой.
-            world.Empty();
-            // Звездочка.
+            // Вывод поля и звездочки.
             world.Drow();
             // Управление.
             world.CellArrangement();
