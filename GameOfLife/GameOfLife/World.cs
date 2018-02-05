@@ -14,13 +14,11 @@ namespace GameOfLife
         // Координатная точка Y.
         private int y = 0;
         // Количество столбцов массива.
-        public int ColumnsLength { get; private set; }
+        private int ColumnsLength { get; set; }
         // Длинна строки массива.
-        public int LineLength { get; private set; }
+        private int LineLength { get; set; }
         // Массив для разчетов.
         private bool[,] _arrayBoard;
-        // Массив для вывода.
-        private bool[,] _nextGeneration;
 
         // Конструктор.
         public World(int sizeX, int sizeY)
@@ -29,7 +27,6 @@ namespace GameOfLife
             LineLength = sizeY;
 
             _arrayBoard = new bool[ColumnsLength, LineLength];
-            _nextGeneration = new bool[ColumnsLength, LineLength];
         }
 
         // Метод отвечающий за расстоновку живих клеток.
@@ -44,8 +41,14 @@ namespace GameOfLife
 
                 switch (info.Key)
                 {
-                    // Создает или удаляет живую клетку.
+                    // Запуск игры.
                     case ConsoleKey.Enter:
+                        {
+                            StartGame();                            
+                            break;
+                        }
+                    // Создает или удаляет живую клетку.
+                    case ConsoleKey.Spacebar:
                         {
                             if (_arrayBoard[x, y] == false)
                                 _arrayBoard[x, y] = true;
@@ -53,12 +56,6 @@ namespace GameOfLife
                                 _arrayBoard[x, y] = false;
 
                             Drow();
-                            break;
-                        }
-                    // Запуск игры.
-                    case ConsoleKey.Spacebar:
-                        {
-                            StartGame();
                             break;
                         }
                     case ConsoleKey.UpArrow:
@@ -93,13 +90,19 @@ namespace GameOfLife
                             Drow();
                             break;
                         }
+                    default:
+                        {
+                            Console.WriteLine("Что-то не так...");
+                            break;
+                        }
                 }
             } while (info.Key != ConsoleKey.Escape);
         }
 
         // Вывод поля и звездочки.
         public void Drow()
-        {          
+        {
+            Console.ForegroundColor = ConsoleColor.White;
             for (var i = 0; i < ColumnsLength; i++)
             {
                 for (var j = 0; j < LineLength; j++)
@@ -107,108 +110,159 @@ namespace GameOfLife
                     if (i == x && j == y)
                         Console.Write("*");
                     else
-                        Console.Write(_arrayBoard[i, j] ? "X" : "_");
+                        Console.Write(_arrayBoard[i, j] ? "O" : "_");
                 }
                 Console.WriteLine();
             }
         }
 
         // Вывод поля после начала игры.
-        public void NextDrow()
+        private void NextDrow()
         {
             for (var i = 0; i < ColumnsLength; i++)
             {
                 for (var j = 0; j < LineLength; j++)
                 {
-                    Console.Write(_nextGeneration[i, j] ? "X" : "_");
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.Write(_arrayBoard[i, j] ? "O" : " ");
+                    Console.ForegroundColor = ConsoleColor.White;
                 }
                 Console.WriteLine();
             }
         }
 
-        // Соседние слоты и их подсчет.
-        public int Neighbors(int numX, int numY)
+        #region
+        // Соседние слоты и их подсчет.V.1
+        //private int Neighbors(int numX, int numY)
+        //{
+        //    int neighborsCount = 0;
+
+        //    for (var i = numX - 1; i < numX + 2; i++)
+        //    {
+        //        for (var j = numY - 1; j < numY + 2; j++)
+        //        {
+        //            if (i == numX && j == numY)
+        //                continue;
+
+        //            if (((numX - 1 >= 0 || numY - 1 >= 0) || (numX + 1 < ColumnsLength || numY + 1 < LineLength)))
+        //            {
+        //                if (_arrayBoard[numX - 1, numY - 1] == true) 
+        //                    neighborsCount++;
+        //                if (_arrayBoard[numX - 1, numY] == true)
+        //                    neighborsCount++;
+        //                if (_arrayBoard[numX - 1, numY + 1] == true)
+        //                    neighborsCount++;
+        //                if (_arrayBoard[numX, numY - 1] == true)
+        //                    neighborsCount++;
+        //                if (_arrayBoard[numX, numY + 1] == true)
+        //                    neighborsCount++;
+        //                if (_arrayBoard[numX + 1, numY - 1] == true)
+        //                    neighborsCount++;
+        //                if (_arrayBoard[numX + 1, numY] == true)
+        //                    neighborsCount++;
+        //                if (_arrayBoard[numX + 1, numY + 1] == true)
+        //                    neighborsCount++;
+        //            }
+        //        }
+        //    }
+        //    return neighborsCount;
+        //}
+        #endregion
+
+        // Соседние слоты и их подсчет.V.2
+        private int Neighbors(int numX, int numY)
         {
-            int callsCount = 0;
+            int neighborsCount = 0;
 
-            for (var i = numX - 1; i < numX + 2; i++)
-            {
-                for (var j = numY - 1; j < numY + 2; j++)
-                {
-                    if (i == numX && j == numY)
-                        continue;
+            if (numX - 1 >= 0)
+                if (_arrayBoard[numX - 1, numY] == true)
+                    neighborsCount++;
 
-                    if (!((numX < 0 || numY < 0) || (numX >= ColumnsLength || numY >= LineLength)))
-                    {
-                        if (_arrayBoard[i, j] == true) //ошибка
-                        {
-                            callsCount++;
-                        }
-                    }
-                }
-            }
-            return callsCount;
+            if (numX - 1 >= 0 && numY - 1 >= 0)
+                if (_arrayBoard[numX - 1, numY - 1] == true)
+                    neighborsCount++;
+
+            if (numY - 1 >= 0)
+                if (_arrayBoard[numX, numY - 1] == true)
+                    neighborsCount++;
+
+            if (numX + 1 < ColumnsLength)
+                if (_arrayBoard[numX + 1, numY] == true)
+                    neighborsCount++;
+
+            if (numY + 1 < LineLength)
+                if (_arrayBoard[numX, numY + 1] == true)
+                    neighborsCount++;
+
+            if (numX + 1 < ColumnsLength && numY + 1 < LineLength)
+                if (_arrayBoard[numX + 1, numY + 1] == true)
+                    neighborsCount++;
+
+            if (numX + 1 < ColumnsLength && numY - 1 >= 0)
+                if (_arrayBoard[numX + 1, numY - 1] == true)
+                    neighborsCount++;
+
+            if (numX - 1 >= 0 && numY + 1 < LineLength)
+                if (_arrayBoard[numX - 1, numY + 1]  == true)
+                    neighborsCount++;
+
+            return neighborsCount;
         }
 
         // Игровой процесс.
-        public void StartGame()
+        private void StartGame()
         {
             Console.Clear();
             int count = 1;
             Console.WriteLine("Поколение {0}", count);
             Drow();
-            CallBehavior();
-            Thread.Sleep(2000);           
 
             do
             {
+                Thread.Sleep(500);
                 Console.Clear();
                 count++;
                 Console.WriteLine("Поколение {0}", count);
-
-                //не готово!
-                for (var i = 0; i < ColumnsLength; i++)
-                {
-                    for (var j = 0; j < LineLength; j++)
-                    {
-                        _nextGeneration[i, j] = _arrayBoard[i, j];
-                    }
-                }
-
-                NextDrow();
                 CallBehavior();
-                Thread.Sleep(2500);
+                NextDrow();
 
-            } while (true);
+            } while (IsWorking() == true);
+        }
+
+        // Проверка на наличие живих клеток для выхода из цикла в StartGame.
+        private bool IsWorking()
+        {
+            bool isWorking = false;
+
+            for (var i = 0; i < ColumnsLength; i++)
+                for (var j = 0; j < LineLength; j++)
+                    if(_arrayBoard[i,j] == true)
+                        isWorking = true;
+            return isWorking;
         }
 
         // Поведение клеток.
         private void CallBehavior()
         {
+            bool[,] _nextGeneration = new bool[ColumnsLength, LineLength];
+
             for (var i = 0; i < ColumnsLength; i++)
             {
                 for (var j = 0; j < LineLength; j++)
                 {
                     if (_arrayBoard[i, j] == true)
                     {
-                        int neighbors = Neighbors(i, j);
-
-                        if (neighbors < 2 || neighbors > 3)
-                            _arrayBoard[i, j] = false;
+                        if (Neighbors(i, j) < 2 || Neighbors(i, j) > 3)
+                            _nextGeneration[i, j] = false;
                         else
-                            _arrayBoard[i, j] = true;
+                            _nextGeneration[i, j] = true;
                     }
                     else
-                    {
-                        int neighbors = Neighbors(i, j);
-
-                        if (neighbors == 3)
-                        {
-                            _arrayBoard[i, j] = true;
-                        }
-                    }
+                        if (Neighbors(i, j) == 3)
+                            _nextGeneration[i, j] = true;
                 }
             }
+            _arrayBoard = _nextGeneration;
         }
     }
 }
