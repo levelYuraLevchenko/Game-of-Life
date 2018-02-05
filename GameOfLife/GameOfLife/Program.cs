@@ -10,7 +10,7 @@ namespace GameOfLife
     {
         static void Main(string[] args)
         {
-            World world = new World(10,20);
+            World world = new World(25,100);
 
             // Вывод поля и звездочки.
             world.Drow();
