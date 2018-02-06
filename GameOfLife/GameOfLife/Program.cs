@@ -10,9 +10,11 @@ namespace GameOfLife
     {
         static void Main(string[] args)
         {
-            World world = new World();
-            world.Empty();
+            World world = new World(25,100);
+
+            // Вывод поля и звездочки.
             world.Drow();
+            // Управление.
             world.CellArrangement();
         }
     }
