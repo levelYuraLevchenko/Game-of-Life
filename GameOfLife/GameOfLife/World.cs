@@ -264,5 +264,6 @@ namespace GameOfLife
             }
             _arrayBoard = _nextGeneration;
         }
+        //
     }
 }
